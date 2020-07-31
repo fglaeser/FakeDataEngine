@@ -1,0 +1,29 @@
+﻿connection.string: "Data Source=localhost;Initial Catalog=DemoCDC;Persist Security Info=True;User ID=sa;Password=CDCpassw0rd!;"
+throttle.ms: 5000
+tables:
+  - name: Employee
+    schema: dbo
+    columns:
+    - name: ID
+      value: "{{randomizer.number(1,1000)}}"
+    - name: Name
+      value: "{{name.firstname(Male)}}"
+    - name: Salary
+      value: "{{randomizer.number(1,1000)}}"
+
+#  - name: tbEventos
+#    schema: dbo
+#    columns:
+#    - name: dtEvento
+#      value: "{{date.Future}}"
+#    - name: tpEvento
+#      value: Bulto
+#    - name: Origem
+#      value: Sorter
+#    - name: Dados
+#      format: json
+#      object:
+#        id: "{{name.firstname(Female)}}"
+#        rampa: "{{name.firstname(Female)}}"
+#        fecha: "{{name.firstname(Female)}}"
+#        modo: 1

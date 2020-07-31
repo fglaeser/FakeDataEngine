@@ -1,0 +1,15 @@
+version: "2"
+
+services:
+  faker:
+    image: fglaeser/fakedataengine:0.1
+    environment:
+      FAKER_CONFIG_PATH: /opt/config.yml
+    volumes:
+      - ./config.yml:/opt/config.yml
+#    depends_on:
+#      - mssql
+  mssql:
+    image: db-demo
+    ports:
+     - "1433:1433"

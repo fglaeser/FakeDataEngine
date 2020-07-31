@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "FakeDataGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "--FAKER_CONFIG_PATH ./config.yml",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
