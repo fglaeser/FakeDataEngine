@@ -1,0 +1,13 @@
+﻿<Project>
+  <PropertyGroup>
+    <Authors>fglaeser</Authors>
+    <Description>Intelligent data generator.</Description>
+    <PackageTags>ibm xms</PackageTags>
+    <RepositoryUrl>https://github.com/fglaeser/FakeDataEngine</RepositoryUrl>
+    <AssemblyVersion>0.2.0</AssemblyVersion>
+    <FileVersion>0.2.0</FileVersion>
+    <Version>0.2.0</Version>
+    <RepositoryType>git</RepositoryType>
+    <Product>FakeDataEngine</Product>
+  </PropertyGroup>
+</Project>

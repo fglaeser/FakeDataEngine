@@ -2,6 +2,7 @@ using Figgle;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Reflection;
 
 namespace FakeDataEngine
 {
@@ -9,7 +10,8 @@ namespace FakeDataEngine
   {
     public static void Main(string[] args)
     {
-      Console.WriteLine(FiggleFonts.Slant.Render("FakeDataEngine"));
+      var v = Assembly.GetExecutingAssembly().GetName().Version;
+      Console.WriteLine(FiggleFonts.Slant.Render(string.Format("FakeDataEngine {0}.{1}.{2}",v.Major, v.Minor, v.Revision)));
       CreateHostBuilder(args).Build().Run();
     }
 

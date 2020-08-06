@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
 
 namespace FakeDataEngine
 {
@@ -21,7 +22,6 @@ namespace FakeDataEngine
     private readonly ILogger<Worker> _logger;
     private readonly IConfiguration _configuration;
     private Config global = new Config();
-    private IList<Table> _tables = new List<Table>();
 
     public Worker(ILogger<Worker> logger, IConfiguration configuration)
     {
@@ -46,24 +46,24 @@ namespace FakeDataEngine
           
           await connection.OpenAsync(stoppingToken);
 
-          foreach(var table in _tables)
+          foreach(var table in global.Tables)
           {
-            var columnNames = table.Fields.Select(f => f.Name);
-            var paramsNames = table.Fields.Select(f => "@" + f.Name);
+            var columnNames = table.Columns.Select(f => f.Name);
+            var paramsNames = table.Columns.Select(f => "@" + f.Name);
             // Generate values
-            var sql = GenerateInsertStatement(table.Scheme, table.Name, columnNames, paramsNames);
+            var sql = GenerateInsertStatement(table.Schema, table.Name, columnNames, paramsNames);
             
             _logger.LogInformation(sql);
 
             var dictionary = new Dictionary<string, object>();
-            foreach(var field in table.Fields)
+            foreach(var field in table.Columns)
             {
               object val = null;
-              if (field.Format.Equals("raw"))
+              if (field.Format == Format.raw)
               {
                 val = ParseValue(field.Value, faker);
               }
-              else if (field.Format.Equals("json"))
+              else if (field.Format == Format.json)
               {
                 val = GenerateJson(field.Object, faker);
               }
@@ -95,62 +95,12 @@ namespace FakeDataEngine
         throw new FileNotFoundException("Config file  not found.", pathToConfig);
       }
 
-      var yaml = new YamlStream();
-      yaml.Load(System.IO.File.OpenText(pathToConfig));
+      var serializer = new DeserializerBuilder()
+        .IgnoreUnmatchedProperties()
+        .Build();
+
+      global = serializer.Deserialize<Config>(File.ReadAllText(pathToConfig));
       
-      var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
-      YamlNode node;
-      if(mapping.Children.TryGetValue("connection.string", out node))
-      {
-        global.ConnectionString = ((YamlScalarNode)node).Value;
-      }
-
-      if (mapping.Children.TryGetValue("throttle.ms", out node))
-      {
-        global.ThrottleMs = int.Parse(((YamlScalarNode)node).Value);
-      }
-
-      YamlNode tables;      
-      if (mapping.Children.TryGetValue("tables", out tables))
-      {
-        foreach(YamlMappingNode table in ((YamlSequenceNode)tables).Children)
-        {
-          var t = new Table {
-            Name = table.Children["name"].ToString(),
-            Scheme = table.Children["schema"].ToString(),
-          };
-
-          var fields = (YamlSequenceNode)table.Children["columns"];
-          foreach(YamlMappingNode f in fields.Children)
-          {
-            var field = new Field
-            {
-              Name = f["name"].ToString()
-            };
-            YamlNode format;
-            if(f.Children.TryGetValue("format", out format))
-            {
-              field.Format = ((YamlScalarNode)format).Value;
-            }
-            YamlNode value;
-            if (f.Children.TryGetValue("value", out value))
-            {
-              field.Value = ((YamlScalarNode)value).Value;
-            }
-            YamlNode obj;
-            if (field.Format.Equals("json") && f.Children.TryGetValue("object", out obj))
-            {
-              foreach(var p in ((YamlMappingNode)obj).Children)
-              {
-                field.Object.Add(p.Key.ToString(), p.Value.ToString());
-              }
-            }
-            t.Fields.Add(field);
-          }
-
-          _tables.Add(t);
-        }
-      }
     }
 
     protected async Task FailFastDbConnection(CancellationToken stoppingToken)
@@ -159,7 +109,8 @@ namespace FakeDataEngine
       {
         _logger.LogInformation("Testing db connection....");
         await connection.OpenAsync(stoppingToken);
-        await connection.CloseAsync();  
+        await connection.CloseAsync();
+        _logger.LogInformation("Testing db connection....[OK]");
       }
     }
     protected string GenerateInsertStatement(string scheme, 

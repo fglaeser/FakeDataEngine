@@ -10,6 +10,19 @@ tables:
       value: "{{name.firstname(Male)}}"
     - name: Salary
       value: "{{randomizer.number(1,1000)}}"
+    - name: expedicion
+      format: array
+      items:
+       - "887888"
+       - "788778"
+    - name: payload
+      format: json
+      object:
+        id: "{{randomizer.number(1000, 9999)}}"
+        ancho: "{{randomizer.number(10, 100)}}"
+        alto: "{{randomizer.number(10, 500)}}"
+        largo: "{{randomizer.number(10, 1000)}}"
+        peso: "{{randomizer.number(100, 9999)}}"
 
 #  - name: tbEventos
 #    schema: dbo
