@@ -35,7 +35,7 @@ or using a `docker-compose.yml` file to launch the container:
 
 services:
   faker:
-    image: fglaeser/fakedataengine:0.1
+    image: fglaeser/fakedataengine:0.2
     environment:
       FAKER_CONFIG_PATH: /opt/config.yml
     volumes:
