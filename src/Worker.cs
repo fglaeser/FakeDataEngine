@@ -1,18 +1,18 @@
 using Bogus;
 using Dapper;
 using FakeDataEngine.Model;
+using FakeDataEngine.Sql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
 namespace FakeDataEngine
@@ -20,79 +20,99 @@ namespace FakeDataEngine
   public class Worker : BackgroundService
   {
     private readonly ILogger<Worker> _logger;
-    private readonly IConfiguration _configuration;
+    private IDatabase _database;
     private Config global = new Config();
 
     public Worker(ILogger<Worker> logger, IConfiguration configuration)
     {
       _logger = logger;
-      _configuration = configuration;
+      LoadConfiguration(configuration);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
-      LoadConfiguration();
       var faker = new Faker();
+      _database = DatabaseFactory.CreateDatabase(global.Provider, global.ConnectionString);
 
-      await FailFastDbConnection(stoppingToken);
+      try
+      {
+        _logger.LogInformation("Testing db connection....");
+        await _database.TestConnectionAsync();
+        _logger.LogInformation("Testing db connection....[OK]");
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Testing db connection....[NO_OK]");
+        throw;
+      }
+
+
+      BuildInsertStatements(global.Tables);
 
       while (!stoppingToken.IsCancellationRequested)
       {
         await Task.Delay(global.ThrottleMs, stoppingToken);
 
-        using (SqlConnection connection = new SqlConnection(global.ConnectionString))
+        using(var connection = _database.CreateConnection())
         {
-          
           await connection.OpenAsync(stoppingToken);
 
           foreach(var table in global.Tables)
           {
-            var columnNames = table.Columns.Select(f => f.Name);
-            var paramsNames = table.Columns.Select(f => "@" + f.Name);
-            // Generate values
-            var sql = GenerateInsertStatement(table.Schema, table.Name, columnNames, paramsNames);
-            
-            _logger.LogInformation(sql);
+            _logger.LogInformation(table.InsertSqlStatement);
 
             var dictionary = new Dictionary<string, object>();
-            foreach(var field in table.Columns)
+            foreach(var column in table.Columns)
             {
               object val = null;
-              if (field.Format == Format.raw)
+              switch(column.Format)
               {
-                val = ParseValue(field.Value, faker);
+                case Format.raw:
+                  val = ParseValue(column.Value, faker);
+                  break;
+                case Format.json:
+                  val = GenerateJson(column.Object, faker);
+                  break;
+                case Format.array:
+                  val = faker.PickRandom(column.Items);
+                  break;
               }
-              else if (field.Format == Format.json)
-              {
-                val = GenerateJson(field.Object, faker);
-              }
-              else 
-              {
-                _logger.LogWarning($"The format {field.Format} is not supported.");
-              }
-              dictionary.Add("@" + field.Name, val);
-              _logger.LogInformation($"@{field.Name}, {val}");
-            }
 
-            var parameters = new DynamicParameters(dictionary);
-            await connection.ExecuteAsync(sql, parameters);
+              dictionary.Add(_database.ParameterPrefix + column.Name, val);
+              _logger.LogInformation($"{_database.ParameterPrefix}{column.Name}, {val}");
+            }
+            try
+            {
+              var parameters = new DynamicParameters(dictionary);
+              await connection.ExecuteAsync(table.InsertSqlStatement, parameters);
+            }
+            catch (Exception ex)
+            {
+              _logger.LogError(ex, "Exception trying to insert fake data.");
+            }
           }
         }
       }
     }
 
-    protected void LoadConfiguration()
+    private void BuildInsertStatements(Table[] tables)
     {
-      var pathToConfig = _configuration.GetSection("FAKER_CONFIG_PATH").Value;
-
-      if(string.IsNullOrEmpty(pathToConfig))
+      foreach (var table in tables)
       {
-        throw new ArgumentException("Missing FAKER_CONFIG_PATH value.");
+        var columnNames = table.Columns.Select(f => f.Name);
+        var paramsNames = table.Columns.Select(f => _database.ParameterPrefix + f.Name);
+        // Generate once
+        table.SetInsertSqlStatement(GenerateInsertStatement(table.Schema, table.Name, columnNames, paramsNames));
       }
+    }
+
+    protected void LoadConfiguration(IConfiguration configuration)
+    {
+      var pathToConfig = configuration.GetSection("FAKER_CONFIG_PATH").Value ?? "/opt/config.yml";
+
       if (File.Exists(pathToConfig) == false)
       {
-        throw new FileNotFoundException("Config file  not found.", pathToConfig);
+        throw new FileNotFoundException("Config file not found.", pathToConfig);
       }
 
       var serializer = new DeserializerBuilder()
@@ -103,16 +123,6 @@ namespace FakeDataEngine
       
     }
 
-    protected async Task FailFastDbConnection(CancellationToken stoppingToken)
-    {
-      using (SqlConnection connection = new SqlConnection(global.ConnectionString))
-      {
-        _logger.LogInformation("Testing db connection....");
-        await connection.OpenAsync(stoppingToken);
-        await connection.CloseAsync();
-        _logger.LogInformation("Testing db connection....[OK]");
-      }
-    }
     protected string GenerateInsertStatement(string scheme, 
       string tableName, 
       IEnumerable<string> columnNames,

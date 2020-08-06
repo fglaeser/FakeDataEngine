@@ -13,5 +13,13 @@ namespace FakeDataEngine.Model
 
     [YamlMember(Alias = "columns", ApplyNamingConventions = false)]
     public IList<Column> Columns { get; set; } = new List<Column>();
+
+    public void SetInsertSqlStatement(string sql)
+    {
+      InsertSqlStatement = sql;
+    }
+
+    [YamlIgnore]
+    public string InsertSqlStatement { get; private set; }
   }
 }

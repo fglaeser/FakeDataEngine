@@ -1,4 +1,7 @@
 ﻿connection.string: "Data Source=localhost;Initial Catalog=DemoCDC;Persist Security Info=True;User ID=sa;Password=CDCpassw0rd!;"
+database.provider: sqlserver
+#connection.string: "User ID=USER;Password=passw0rd;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=DB)));Persist Security Info=False"
+#database.provider: oracle
 throttle.ms: 5000
 tables:
   - name: Employee
@@ -10,11 +13,12 @@ tables:
       value: "{{name.firstname(Male)}}"
     - name: Salary
       value: "{{randomizer.number(1,1000)}}"
-    - name: expedicion
+    - name: office
       format: array
       items:
-       - "887888"
-       - "788778"
+       - "ONE"
+       - "TWO"
+       - "ALL"
     - name: payload
       format: json
       object:
@@ -23,20 +27,3 @@ tables:
         alto: "{{randomizer.number(10, 500)}}"
         largo: "{{randomizer.number(10, 1000)}}"
         peso: "{{randomizer.number(100, 9999)}}"
-
-#  - name: tbEventos
-#    schema: dbo
-#    columns:
-#    - name: dtEvento
-#      value: "{{date.Future}}"
-#    - name: tpEvento
-#      value: Bulto
-#    - name: Origem
-#      value: Sorter
-#    - name: Dados
-#      format: json
-#      object:
-#        id: "{{name.firstname(Female)}}"
-#        rampa: "{{name.firstname(Female)}}"
-#        fecha: "{{name.firstname(Female)}}"
-#        modo: 1
