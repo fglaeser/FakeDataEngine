@@ -4,19 +4,28 @@ Sometimes working with database, you need to continuously insert records in a ta
 
 * Entirely developed using Net Core 3.1
 * FakeDataEngine uses [Bogus](https://github.com/bchavez/Bogus) to generate fake data.
-* Sql Server is the only database supported until now.
+* Sql Serve and Oracle supported until now (Ask for a new one).
 
 ## Running with Docker
 
-Images are hosted at [Docker Hub](https://hub.docker.com/repository/docker/fglaeser/fakedataengine).
+Images are hosted at [Docker Hub](https://hub.docker.com/r/fglaeser/fakedataengine).
 
 Launch container:
 
 ```sh
 docker run -it --rm \
-    -e FAKER_CONFIG_PATH=/opt/config.yml \
     -v ./config.yml:/opt/config.yml \
-    fglaeser/fakedataengine:0.1
+    fglaeser/fakedataengine:0.2
+    
+```
+
+By default `fakedataengine` will load the `config.yml` from `/opt/config.yml`. You could set a different path with the `FAKER_CONFIG_PATH` environment variable.
+
+```sh
+docker run -it --rm \
+    -e FAKER_CONFIG_PATH=/other_path/config.yml \
+    -v ./config.yml:/other_path/config.yml \
+    fglaeser/fakedataengine:0.2
     
 ```
 
@@ -46,6 +55,7 @@ Let's check a `config.yml`, you could check that the configuration is pretty str
 ```yaml
 
 connection.string: "Data Source=mssql;Initial Catalog=DemoDB;Persist Security Info=True;User ID=sa;Password=passw0rd!;"
+database.provider: sqlserver # oracle
 throttle.ms: 5000
 tables:
   - name: Employee
@@ -57,6 +67,12 @@ tables:
       value: "{{name.firstname(Male)}}"
     - name: Salary
       value: "{{randomizer.number(1,1000)}}"
+    - name: office
+      format: array
+      items:
+       - "ONE"
+       - "TWO"
+       - "ALL"
     - name: payload
       format: json
       object:
@@ -66,7 +82,7 @@ tables:
 
 ```
 
-You can configure your database with the `connection.string` property and how fast the data is generated with `throttle.ms`.
+You can configure your database with the `connection.string` property, the database provider with `database.provider` (`sqlserver` and `oracle` for now) and how fast the data is generated with `throttle.ms`. 
 ### Tables
 To configure tables you need to set the following properties:
 
@@ -78,9 +94,10 @@ To configure tables you need to set the following properties:
 To configure a column you need to set the following properties:
 
 * `name`: Column name.
-* `format`: Default value is `raw`, but you can also set this value to `json` in order to fill the column with a valid json string.
+* `format`: Default value is `raw`, but you can also set this value to `json` in order to fill the column with a valid json string or `array` to choose between a list of values.
 * `value`: Here you can use a fix value or a [Bogus handlebar](https://github.com/bchavez/Bogus#parse-handlebars)
-* `object`: If you column format is `json`, use this to define the properties of your json object.
+* `object`: If your column format is `json`, use this to define the properties of your json object.
+* `items`: If your column format is `array`, use this to define an array of values. The generator will randomly pick one for each insert.
 
 In the previous example, the column payload will be fill with a json string like the following:
 
