@@ -1,3 +1,8 @@
+![latest 0.2](https://img.shields.io/badge/latest-0.2-green.svg?style=flat)
+![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+[![](https://img.shields.io/docker/stars/fglaeser/fakedataengine.svg)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
+[![](https://img.shields.io/docker/pulls/fglaeser/fakedataengine.svg)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
+[![](https://img.shields.io/docker/image-size/fglaeser/fakedataengine?sort=date)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
 # FakeDataEngine
 
 Sometimes working with database, you need to continuously insert records in a table, e.g testing a CDC implementation, with near real data.  FakeDataEngine tries to solves that problem. FakeDataEngine is inspired in [volube](https://github.com/MichaelDrogalis/voluble).
