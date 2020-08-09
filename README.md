@@ -1,6 +1,5 @@
 ![latest 0.2](https://img.shields.io/badge/latest-0.2-green.svg?style=flat)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
-[![](https://img.shields.io/docker/stars/fglaeser/fakedataengine.svg)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
 [![](https://img.shields.io/docker/pulls/fglaeser/fakedataengine.svg)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
 [![](https://img.shields.io/docker/image-size/fglaeser/fakedataengine?sort=date)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
 # FakeDataEngine
