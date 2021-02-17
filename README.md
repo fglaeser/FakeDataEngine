@@ -54,7 +54,7 @@ docker-compose up
 
 ## Configuration
 
-Let's check a `config.yml`, you could check that the configuration is pretty straightforward:
+Let's check a `config.yml`, you could realize that the configuration is pretty straightforward:
 
 ```yaml
 
