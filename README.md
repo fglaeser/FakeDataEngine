@@ -4,7 +4,7 @@
 [![](https://img.shields.io/docker/image-size/fglaeser/fakedataengine?sort=date)](https://hub.docker.com/r/fglaeser/fakedataengine 'DockerHub')
 # FakeDataEngine
 
-Sometimes working with database, you need to continuously insert records in a table, e.g testing a CDC implementation, with near real data.  FakeDataEngine tries to solves that problem. FakeDataEngine is inspired in [volube](https://github.com/MichaelDrogalis/voluble).
+Sometimes working with database, you need to continuously insert records in a table, e.g testing a CDC implementation, with near real data.  FakeDataEngine tries to solves that problem. FakeDataEngine is inspired in [voluble](https://github.com/MichaelDrogalis/voluble).
 
 * Entirely developed using Net Core 3.1
 * FakeDataEngine uses [Bogus](https://github.com/bchavez/Bogus) to generate fake data.
