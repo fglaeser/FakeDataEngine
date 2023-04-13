@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,7 +9,7 @@
     <PackageReference Include="Dapper" Version="2.0.35" />
     <PackageReference Include="Figgle" Version="0.3.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.6" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.80" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.90" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
     <PackageReference Include="YamlDotNet" Version="8.1.2" />
   </ItemGroup>
